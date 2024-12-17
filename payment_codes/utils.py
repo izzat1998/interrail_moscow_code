@@ -1,0 +1,92 @@
+import os
+import uuid
+import requests
+from datetime import datetime
+
+from django.conf import settings
+from docxtpl import DocxTemplate
+from interrail_moscow_code.settings import DOC_TO_PDF_CONVERTER_URL
+
+
+def generate_application_document(application):
+    """
+    Generate DOCX document from template and convert to PDF using custom converter
+    """
+    # Path to your template
+    template_path = os.path.join(settings.BASE_DIR, 'templates', 'documents', 'application_template.docx')
+
+    # Create unique filenames
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    unique_id = str(uuid.uuid4())[:8]
+    docx_filename = f'application_{application.id}_{timestamp}_{unique_id}.docx'
+    pdf_filename = f'application_{application.id}_{timestamp}_{unique_id}.pdf'
+
+    # Path for temporary DOCX file
+    temp_docx_path = os.path.join(settings.MEDIA_ROOT, 'temp', docx_filename)
+
+    # Ensure temp directory exists
+    os.makedirs(os.path.join(settings.MEDIA_ROOT, 'temp'), exist_ok=True)
+
+    try:
+        # Prepare context data for template
+        context = {
+            'number': application.number,
+            'date': application.date.strftime('%d.%m.%Y') if application.date else '',
+            'sending_type': dict(application.SENDING_TYPE_CHOICES).get(application.sending_type, ''),
+            'quantity': application.quantity,
+            'departure': application.departure,
+            'departure_code': application.departure_code,
+            'destination': application.destination,
+            'destination_code': application.destination_code,
+            'cargo': application.cargo,
+            'hs_code': application.hs_code,
+            'etcng': application.etcng,
+            'loading_type': dict(application.LOADING_TYPE_CHOICES).get(application.loading_type, ''),
+            'weight': application.weight,
+            'container_type': dict(application.CONTAINER_TYPE_CHOICES).get(application.container_type, ''),
+            'rolling_stock_1': application.rolling_stock_1,
+            'rolling_stock_2': application.rolling_stock_2,
+            'conditions_of_carriage': application.conditions_of_carriage,
+            'agreed_rate': application.agreed_rate,
+            'add_charges': application.add_charges,
+            'border_crossing': application.border_crossing,
+            'containers_or_wagons': application.containers_or_wagons,
+            'period': application.period,
+            'shipper': application.shipper,
+            'consignee': application.consignee,
+            'departure_country': application.departure_country,
+            'destination_country': application.destination_country,
+            'territories': ', '.join([t.name for t in application.territories.all()]),
+            'forwarder': application.forwarder.name if application.forwarder else '',
+            'manager': str(application.manager) if application.manager else '',
+            'comment': application.comment,
+        }
+
+        # Generate DOCX
+        doc = DocxTemplate(template_path)
+        doc.render(context)
+        doc.save(temp_docx_path)
+
+        # Convert to PDF using custom converter
+        pdf_relative_path = convert(temp_docx_path, pdf_filename)
+
+        # Clean up temporary DOCX file
+        if os.path.exists(temp_docx_path):
+            os.remove(temp_docx_path)
+
+        return pdf_relative_path
+
+    except Exception as e:
+        # Clean up temporary files in case of error
+        if os.path.exists(temp_docx_path):
+            os.remove(temp_docx_path)
+        raise e
+
+
+def convert(docx_file, file_name, path="applications"):
+    url = DOC_TO_PDF_CONVERTER_URL
+    response = requests.post(url, files={"document": open(docx_file, "rb")})
+    with open(f"media/{path}/{file_name}", "wb") as f:
+        f.write(response.content)
+    print(f"File {file_name} uploaded successfully")
+    return f"{path}/" + file_name
