@@ -106,8 +106,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install bandit safety pre-commit pytest-django django django-environ
-        env:
-          DOC_TO_PDF_CONVERTER_URL: "DOC_TO_PDF_CONVERTER_URL"
+
 
       - name: Run Security Checks
         run: |
@@ -117,3 +116,5 @@ jobs:
       - name: Run pre-commit hooks
         run: |
           pre-commit run --all-files
+        env:
+          DOC_TO_PDF_CONVERTER_URL: "DOC_TO_PDF_CONVERTER_URL"
