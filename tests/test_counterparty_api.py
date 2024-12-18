@@ -1,13 +1,13 @@
 import pytest
 
-pytestmark = pytest.mark.django_db
+
 
 from django.urls import reverse
 from rest_framework import status
 from payment_codes.models import Counterparty
 from payment_codes.serializers import CounterpartySerializer
 
-
+pytestmark = pytest.mark.django_db
 class TestCounterpartyAPI:
     def test_list_counterparties(self, authenticated_client, counterparty):
         """Test retrieving a list of counterparties"""
