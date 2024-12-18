@@ -112,3 +112,18 @@ jobs:
         run: |
           bandit -r . -ll -x ./tests,./venv
           safety check
+  deploy:
+    needs: [ test, lint, security ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Ubuntu Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /var/www/interrail_moscow_code
+            git pull origin master
