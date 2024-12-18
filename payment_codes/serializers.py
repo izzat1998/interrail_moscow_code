@@ -9,20 +9,20 @@ from payment_codes.models import Territory, Counterparty, Application, PaymentCo
 class TerritorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Territory
-        fields = '__all__'
+        fields = "__all__"
 
 
 class CounterpartySerializer(serializers.ModelSerializer):
     class Meta:
         model = Counterparty
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
-        fields = '__all__'
-        read_only_fields = ('created', 'modified', 'request_file', 'id', 'manager')
+        fields = "__all__"
+        read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
 class PaymentCodeSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class PaymentCodeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentCode
-        fields = ['number', 'territory', 'id']
+        fields = ["number", "territory", "id"]
 
 
 class ApplicationRetrieveSerializer(serializers.ModelSerializer):
@@ -38,8 +38,8 @@ class ApplicationRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = '__all__'
-        read_only_fields = ('created', 'modified', 'request_file', 'id', 'manager')
+        fields = "__all__"
+        read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
 class ApplicationCreateView(generics.CreateAPIView):
@@ -65,9 +65,9 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
     territory_id = serializers.IntegerField(required=True)
 
     def validate(self, data):
-        start_range = data['start_range']
-        end_range = data['end_range']
-        application = self.context['view'].kwargs.get('pk')
+        start_range = data["start_range"]
+        end_range = data["end_range"]
+        application = self.context["view"].kwargs.get("pk")
 
         try:
             application = Application.objects.get(id=application)
@@ -79,8 +79,8 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
         current_codes = application.codes.count()
 
         if num_codes + current_codes > total_allowed:
-            raise ValidationError({
-                "error": "Range exceeds the application's quantity."
-            })
+            raise ValidationError(
+                {"error": "Range exceeds the application's quantity."}
+            )
 
         return data

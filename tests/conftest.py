@@ -14,32 +14,33 @@ from payment_codes.models import Territory, Counterparty, Application, PaymentCo
 User = get_user_model()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def django_db_setup(django_db_setup, django_db_blocker, tmpdir_factory):
     """Set up test directories and template"""
     with django_db_blocker.unblock():
         # Create necessary directories
         media_root = settings.MEDIA_ROOT
-        temp_dir = os.path.join(media_root, 'temp')
-        applications_dir = os.path.join(media_root, 'test_applications')
-        template_dir = os.path.join(settings.BASE_DIR, 'test_templates', 'test_documents')
+        temp_dir = os.path.join(media_root, "temp")
+        applications_dir = os.path.join(media_root, "test_applications")
+        template_dir = os.path.join(
+            settings.BASE_DIR, "test_templates", "test_documents"
+        )
 
         os.makedirs(temp_dir, exist_ok=True)
         os.makedirs(applications_dir, exist_ok=True)
         os.makedirs(template_dir, exist_ok=True)
 
         # Create a dummy template file
-        template_path = os.path.join(template_dir, 'application_template.docx')
+        template_path = os.path.join(template_dir, "application_template.docx")
         if not os.path.exists(template_path):
-            with open(template_path, 'w') as f:
-                f.write('Dummy template')
+            with open(template_path, "w") as f:
+                f.write("Dummy template")
 
         yield
 
         # Cleanup after tests
         shutil.rmtree(temp_dir, ignore_errors=True)
         shutil.rmtree(applications_dir, ignore_errors=True)
-
 
 
 @pytest.fixture
@@ -50,9 +51,7 @@ def api_client():
 @pytest.fixture
 def user():
     return User.objects.create(
-        username='testuser',
-        email='test@example.com',
-        password='testpass123'
+        username="testuser", email="test@example.com", password="testpass123"
     )
 
 
@@ -64,18 +63,18 @@ def access_token(user):
 
 @pytest.fixture
 def authenticated_client(api_client, access_token):
-    api_client.credentials(HTTP_AUTHORIZATION=f'Bearer {str(access_token)}')
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(access_token)}")
     return api_client
 
 
 @pytest.fixture
 def territory():
-    return Territory.objects.create(name='Test Territory')
+    return Territory.objects.create(name="Test Territory")
 
 
 @pytest.fixture
 def counterparty():
-    return Counterparty.objects.create(name='Test Counterparty')
+    return Counterparty.objects.create(name="Test Counterparty")
 
 
 @pytest.fixture
@@ -102,7 +101,7 @@ def application(user, territory, counterparty):
         add_charges=Decimal("50.00"),
         manager=user,
         created=datetime.now(),
-        modified=datetime.now()
+        modified=datetime.now(),
     )
     app.territories.add(territory)
     return app
@@ -121,5 +120,5 @@ def payment_code(application, territory):
         rate=Decimal("500.00"),
         add_charges=Decimal("50.00"),
         created=datetime.now(),
-        modified=datetime.now()
+        modified=datetime.now(),
     )
