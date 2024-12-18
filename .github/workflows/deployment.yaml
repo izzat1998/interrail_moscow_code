@@ -113,6 +113,8 @@ jobs:
           bandit -r . -ll -x ./tests,./venv
           safety check
   deploy:
+    environment:
+      name: deployment
     needs: [ test, lint, security ]
     runs-on: ubuntu-latest
 
