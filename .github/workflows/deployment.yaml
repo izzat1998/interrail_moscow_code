@@ -129,3 +129,4 @@ jobs:
           script: |
             cd /var/www/interrail_moscow_code
             git pull origin master
+            systemctl restart interrail_moscow_code.service
