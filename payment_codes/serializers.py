@@ -64,7 +64,22 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
     end_range = serializers.CharField(required=True)
     territory_id = serializers.IntegerField(required=True)
 
+    def validate_territory_id(self, value):
+        """
+        Check that the territory exists.
+        """
+        try:
+            Territory.objects.get(id=value)
+        except Territory.DoesNotExist:
+            raise serializers.ValidationError("Territory does not exist.")
+        return value
+
+    # check for correct range
     def validate(self, data):
+        """
+        Check that the start range is less than or equal to the end range
+        and that the range does not exceed the application's quantity.
+        """
         start_range = data["start_range"]
         end_range = data["end_range"]
         application = self.context["view"].kwargs.get("pk")
@@ -73,6 +88,11 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
             application = Application.objects.get(id=application)
         except Application.DoesNotExist:
             raise ValidationError({"error": "Application not found."})
+
+        if start_range > end_range:
+            raise ValidationError(
+                {"error": "Start range must be less than or equal to end range."}
+            )
 
         num_codes = int(end_range) - int(start_range) + 1
         total_allowed = application.territories.count() * application.quantity

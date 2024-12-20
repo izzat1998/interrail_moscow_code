@@ -1,8 +1,8 @@
 import logging
 import os
-from datetime import datetime
 
 from django.db import transaction
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, generics, serializers
 from rest_framework.exceptions import ValidationError
@@ -124,9 +124,7 @@ class ApplicationCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        instance = serializer.save(
-            manager=self.request.user, created=datetime.now(), modified=datetime.now()
-        )
+        instance = serializer.save(manager=self.request.user)
         try:
             # Generate PDF and update request_file field
             pdf_path = generate_application_document(instance)
@@ -148,6 +146,7 @@ class ApplicationUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
 
+    @transaction.atomic
     def perform_update(self, serializer):
         instance = serializer.instance
         # Store old file path if it exists
@@ -209,8 +208,8 @@ class PaymentCodeCreateRange(generics.CreateAPIView):
                     date=application.date,
                     number=str(number).zfill(len(start_range)),
                     territory_id=territory_id,
-                    created=datetime.now(),
-                    modified=datetime.now(),
+                    created=timezone.now(),
+                    modified=timezone.now(),
                 )
             )
 

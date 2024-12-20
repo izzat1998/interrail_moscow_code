@@ -28,7 +28,7 @@ urlpatterns = [
     path(
         "application/<int:pk>/update/",
         ApplicationUpdateView.as_view(),
-        name="application-create",
+        name="application-update",
     ),
     path(
         "application/<int:pk>/detail/",

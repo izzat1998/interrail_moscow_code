@@ -4,8 +4,8 @@ from users.models import CustomUser
 
 
 class TimeStampedModel(models.Model):
-    created: models.DateTimeField = models.DateTimeField(auto_now_add=False)
-    modified: models.DateTimeField = models.DateTimeField(auto_now=False)
+    created: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    modified: models.DateTimeField = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
