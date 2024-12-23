@@ -52,6 +52,11 @@ def generate_application_document(application):
             "container_type": dict(application.CONTAINER_TYPE_CHOICES).get(
                 application.container_type, ""
             ),
+            "paid_telegram": (
+                "Прошу также предоставить проплатную телеграмму"
+                if application.paid_telegram
+                else ""
+            ),
             "rolling_stock_1": application.rolling_stock_1,
             "rolling_stock_2": application.rolling_stock_2,
             "conditions_of_carriage": application.conditions_of_carriage,

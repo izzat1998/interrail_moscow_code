@@ -3,7 +3,7 @@ import os
 
 from django.db import transaction
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import viewsets, generics, serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -37,7 +37,9 @@ class TerritoryViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(summary="Create territory", description="Create a new territory")
+    @extend_schema(
+        summary="Create territory", description="Create a new territory", exclude=True
+    )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -50,6 +52,7 @@ class TerritoryViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Update territory",
         description="Update all fields of a specific territory",
+        exclude=True,
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
@@ -57,12 +60,15 @@ class TerritoryViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Partial update territory",
         description="Update one or more fields of a specific territory",
+        exclude=True,
     )
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Delete territory", description="Delete a specific territory"
+        summary="Delete territory",
+        description="Delete a specific territory",
+        exclude=True,
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
@@ -85,7 +91,9 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Create counterparty", description="Create a new counterparty"
+        summary="Create counterparty",
+        description="Create a new counterparty",
+        exclude=True,
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -100,6 +108,7 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Update counterparty",
         description="Update all fields of a specific counterparty",
+        exclude=True,
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
@@ -107,22 +116,57 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Partial update counterparty",
         description="Update one or more fields of a specific counterparty",
+        exclude=True,
     )
     def partial_update(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Delete counterparty", description="Delete a specific counterparty"
+        summary="Delete counterparty",
+        description="Delete a specific counterparty",
+        exclude=True,
     )
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
 
+@extend_schema(tags=["Applications"])
+@extend_schema(
+    summary="Create a new application",
+    description="""
+    Creates a new application with the provided data.
+    The system will automatically:
+    - Assign the current user as manager
+    - Generate a PDF document
+    - Store the PDF path in request_file field
+
+    Choice Fields:
+    - sending_type: single (Одиночный) or block_train (КП)
+    - loading_type: wagon (Вагон) or container (Контейнер)
+    - container_type: 20, 20HC, 40, 40HC, 45
+
+    Examples of valid data:
+    - rolling_stock_1: Собственный (СПС) , Инвентарный (МПС)
+    - rolling_stock_2: Платформа, Цистерна, Вагон , Фитинговая платформа
+    - paid_telegram: true or false ('Прошу также предоставить проплатную телеграмму' if true else empty)
+    - conditions_of_carriage: FOR-FOR,FOB-FOR ...
+    """,
+    responses={
+        201: OpenApiResponse(
+            description="Application created successfully",
+            response=ApplicationSerializer,
+        ),
+        400: OpenApiResponse(
+            description="Failed to create application due to validation errors or PDF generation failure"
+        ),
+    },
+)
 class ApplicationCreateView(generics.CreateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def perform_create(self, serializer):
         instance = serializer.save(manager=self.request.user)
         try:
@@ -140,6 +184,7 @@ class ApplicationCreateView(generics.CreateAPIView):
             )
 
 
+@extend_schema(tags=["Applications"])
 class ApplicationUpdateView(generics.UpdateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
@@ -174,6 +219,7 @@ class ApplicationUpdateView(generics.UpdateAPIView):
             )
 
 
+@extend_schema(tags=["Applications"])
 class ApplicationRetrieveView(generics.RetrieveAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationRetrieveSerializer
@@ -181,6 +227,7 @@ class ApplicationRetrieveView(generics.RetrieveAPIView):
     lookup_field = "pk"
 
 
+@extend_schema(tags=["Payment Codes"])
 class PaymentCodeCreateRange(generics.CreateAPIView):
     serializer_class = PaymentCodeCreateSerializer
     permission_classes = [IsAuthenticated]
