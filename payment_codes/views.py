@@ -185,6 +185,13 @@ class ApplicationCreateView(generics.CreateAPIView):
 
 
 @extend_schema(tags=["Applications"])
+class ApplicationListView(generics.ListAPIView):
+    queryset = Application.objects.all()
+    serializer_class = ApplicationSerializer
+    permission_classes = [IsAuthenticated]
+
+
+@extend_schema(tags=["Applications"])
 class ApplicationUpdateView(generics.UpdateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer

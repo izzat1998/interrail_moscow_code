@@ -8,6 +8,7 @@ from payment_codes.views import (
     ApplicationUpdateView,
     ApplicationRetrieveView,
     PaymentCodeCreateRange,
+    ApplicationListView,
 )
 
 router = DefaultRouter()
@@ -24,6 +25,16 @@ urlpatterns = [
         "application/create/",
         ApplicationCreateView.as_view(),
         name="application-create",
+    ),
+    path(
+        "application/list/",
+        ApplicationListView.as_view(),
+        name="application-list",
+    ),
+    path(
+        "application/<int:pk>/update/",
+        ApplicationUpdateView.as_view(),
+        name="application-update",
     ),
     path(
         "application/<int:pk>/update/",
