@@ -36,6 +36,9 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 AUTH_USER_MODEL = "users.CustomUser"
 # Application definition
+CSRF_TRUSTED_ORIGINS = [
+    "https://moscow-code.interrail.uz",
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
