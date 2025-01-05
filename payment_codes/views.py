@@ -4,7 +4,7 @@ import os
 from django.db import transaction
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from rest_framework import viewsets, generics, serializers
+from rest_framework import viewsets, generics, serializers, pagination
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 
@@ -15,6 +15,7 @@ from payment_codes.serializers import (
     ApplicationSerializer,
     PaymentCodeCreateSerializer,
     ApplicationRetrieveSerializer,
+    ApplicationListSerializer,
 )
 from payment_codes.utils import generate_application_document
 
@@ -184,11 +185,18 @@ class ApplicationCreateView(generics.CreateAPIView):
             )
 
 
+class ApplicationPagination(pagination.PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 @extend_schema(tags=["Applications"])
 class ApplicationListView(generics.ListAPIView):
     queryset = Application.objects.all()
-    serializer_class = ApplicationSerializer
+    serializer_class = ApplicationListSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = ApplicationPagination
 
 
 @extend_schema(tags=["Applications"])

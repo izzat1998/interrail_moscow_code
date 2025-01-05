@@ -25,6 +25,13 @@ class ApplicationSerializer(serializers.ModelSerializer):
         read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
+class ApplicationListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = ["id"]
+        read_only_fields = ["id"]
+
+
 class PaymentCodeSerializer(serializers.ModelSerializer):
     territory = TerritorySerializer()
 
