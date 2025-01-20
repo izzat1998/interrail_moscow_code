@@ -1,6 +1,5 @@
 import os
 import requests
-from datetime import datetime
 
 from django.conf import settings
 from docxtpl import DocxTemplate
@@ -16,10 +15,8 @@ def generate_application_document(application):
         settings.BASE_DIR, "templates", "documents", "application_template.docx"
     )
 
-    # Create unique filenames
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    docx_filename = f"application_{application.id}_{timestamp}.docx"
-    pdf_filename = f"application_{application.id}_{timestamp}.pdf"
+    docx_filename = f"application_{application.number}.docx"
+    pdf_filename = f"application_{application.number}.pdf"
 
     # Path for temporary DOCX file
     temp_docx_path = os.path.join(settings.MEDIA_ROOT, "temp", docx_filename)
