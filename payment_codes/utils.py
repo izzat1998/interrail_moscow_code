@@ -1,5 +1,4 @@
 import os
-import uuid
 import requests
 from datetime import datetime
 
@@ -19,9 +18,8 @@ def generate_application_document(application):
 
     # Create unique filenames
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    unique_id = str(uuid.uuid4())[:8]
-    docx_filename = f"application_{application.id}_{timestamp}_{unique_id}.docx"
-    pdf_filename = f"application_{application.id}_{timestamp}_{unique_id}.pdf"
+    docx_filename = f"application_{application.id}_{timestamp}.docx"
+    pdf_filename = f"application_{application.id}_{timestamp}.pdf"
 
     # Path for temporary DOCX file
     temp_docx_path = os.path.join(settings.MEDIA_ROOT, "temp", docx_filename)
@@ -32,7 +30,7 @@ def generate_application_document(application):
     try:
         # Prepare context data for template
         context = {
-            "number": application.number,
+            "order_number": application.number,
             "date": application.date.strftime("%d.%m.%Y") if application.date else "",
             "sending_type": dict(application.SENDING_TYPE_CHOICES).get(
                 application.sending_type, ""
