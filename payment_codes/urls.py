@@ -37,11 +37,6 @@ urlpatterns = [
         name="application-update",
     ),
     path(
-        "application/<int:pk>/update/",
-        ApplicationUpdateView.as_view(),
-        name="application-update",
-    ),
-    path(
         "application/<int:pk>/detail/",
         ApplicationRetrieveView.as_view(),
         name="application-detail",
