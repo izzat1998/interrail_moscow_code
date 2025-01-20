@@ -59,6 +59,14 @@ class TerritoryViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
+        summary="Partial update territory",
+        description="Update one or more fields of a specific territory",
+        exclude=True,
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
         summary="Delete territory",
         description="Delete a specific territory",
         exclude=True,
@@ -105,6 +113,14 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
     )
     def update(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Partial update counterparty",
+        description="Update one or more fields of a specific counterparty",
+        exclude=True,
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
 
     @extend_schema(
         summary="Delete counterparty",
@@ -189,6 +205,7 @@ class ApplicationUpdateView(generics.UpdateAPIView):
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
+    http_method_names = ["put"]
 
     @transaction.atomic
     def perform_update(self, serializer):

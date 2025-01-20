@@ -146,10 +146,12 @@ class TestApplicationUpdateAPI:
             "destination": "Updated Destination",
             "created": timezone.now(),
             "modified": timezone.now(),
+            "forwarder": application.forwarder.id,
+            "territories": [application.territories.first().id],
         }
 
-        response = authenticated_client.patch(url, payload, format="json")
-
+        response = authenticated_client.put(url, payload, format="json")
+        print("Response data:", response.data)
         assert response.status_code == status.HTTP_200_OK
         application.refresh_from_db()
         assert application.number == "TEST002-UPDATED"
@@ -167,10 +169,21 @@ class TestApplicationUpdateAPI:
         mock_generate_doc.side_effect = Exception("Document generation failed")
 
         url = reverse("application-update", args=[application.id])
-        payload = {"number": "TEST002-FAILED"}
+        payload = {
+            "number": "TEST002-UPDATED",
+            "sending_type": "block_train",
+            "quantity": 4,
+            "departure": "Updated Departure",
+            "destination": "Updated Destination",
+            "created": timezone.now(),
+            "modified": timezone.now(),
+            "forwarder": application.forwarder.id,
+            "territories": [application.territories.first().id],
+        }
 
-        response = authenticated_client.patch(url, payload, format="json")
-
+        response = authenticated_client.put(url, payload, format="json")
+        print("Response data:", response.data)
+        print("Response status code:", response.status_code)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "Document generation failed" in str(response.data["error"])
 
@@ -183,7 +196,7 @@ class TestApplicationUpdateAPI:
         url = reverse("application-update", args=[99999])
         payload = {"number": "TEST999"}
 
-        response = authenticated_client.patch(url, payload, format="json")
+        response = authenticated_client.put(url, payload, format="json")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_retrieve_application_details(

@@ -27,6 +27,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer
+    http_method_names = ["put"]
 
     def get_object(self):
         return self.request.user
@@ -35,6 +36,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
 class ChangePasswordView(generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
+    http_method_names = ["put"]
 
     def get_object(self):
         return self.request.user
