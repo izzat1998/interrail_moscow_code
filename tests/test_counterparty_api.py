@@ -3,7 +3,7 @@ import pytest
 
 from django.urls import reverse
 from rest_framework import status
-from payment_codes.models import Counterparty
+from counterparty.models import Counterparty
 from payment_codes.serializers import CounterpartySerializer
 
 pytestmark = pytest.mark.django_db

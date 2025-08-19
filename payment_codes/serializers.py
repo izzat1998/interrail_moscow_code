@@ -3,7 +3,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 
-from payment_codes.models import Territory, Counterparty, Application, PaymentCode
+from core.models import Territory
+from counterparty.models import Counterparty  
+from payment_codes.models import InterrailRuApplication, InterrailRuCode
 
 
 class TerritorySerializer(serializers.ModelSerializer):
@@ -18,40 +20,40 @@ class CounterpartySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ApplicationSerializer(serializers.ModelSerializer):
+class InterrailRuApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Application
+        model = InterrailRuApplication
         fields = "__all__"
         read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
-class ApplicationListSerializer(serializers.ModelSerializer):
+class InterrailRuApplicationListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Application
+        model = InterrailRuApplication
         fields = ["id"]
         read_only_fields = ["id"]
 
 
-class PaymentCodeSerializer(serializers.ModelSerializer):
+class InterrailRuCodeSerializer(serializers.ModelSerializer):
     territory = TerritorySerializer()
 
     class Meta:
-        model = PaymentCode
+        model = InterrailRuCode
         fields = ["number", "territory", "id"]
 
 
-class ApplicationRetrieveSerializer(serializers.ModelSerializer):
-    codes = PaymentCodeSerializer(many=True, read_only=True)
+class InterrailRuApplicationRetrieveSerializer(serializers.ModelSerializer):
+    ru_codes = InterrailRuCodeSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Application
+        model = InterrailRuApplication
         fields = "__all__"
         read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
 class ApplicationCreateView(generics.CreateAPIView):
-    queryset = Application.objects.all()
-    serializer_class = ApplicationSerializer
+    queryset = InterrailRuApplication.objects.all()
+    serializer_class = InterrailRuApplicationSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
@@ -61,8 +63,8 @@ class ApplicationCreateView(generics.CreateAPIView):
 
 
 class ApplicationRetrieveView(generics.RetrieveAPIView):
-    queryset = Application.objects.all()
-    serializer_class = ApplicationRetrieveSerializer
+    queryset = InterrailRuApplication.objects.all()
+    serializer_class = InterrailRuApplicationRetrieveSerializer
     permission_classes = [IsAuthenticated]
 
 
@@ -92,8 +94,8 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
         application = self.context["view"].kwargs.get("pk")
 
         try:
-            application = Application.objects.get(id=application)
-        except Application.DoesNotExist:
+            application = InterrailRuApplication.objects.get(id=application)
+        except InterrailRuApplication.DoesNotExist:
             raise ValidationError({"error": "Application not found."})
 
         if start_range > end_range:
@@ -103,7 +105,7 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
 
         num_codes = int(end_range) - int(start_range) + 1
         total_allowed = application.territories.count() * application.quantity
-        current_codes = application.codes.count()
+        current_codes = application.ru_codes.count()
 
         if num_codes + current_codes > total_allowed:
             raise ValidationError(
@@ -111,3 +113,10 @@ class PaymentCodeCreateSerializer(serializers.Serializer):
             )
 
         return data
+
+
+# Backward compatibility aliases
+ApplicationSerializer = InterrailRuApplicationSerializer
+ApplicationListSerializer = InterrailRuApplicationListSerializer
+PaymentCodeSerializer = InterrailRuCodeSerializer
+ApplicationRetrieveSerializer = InterrailRuApplicationRetrieveSerializer

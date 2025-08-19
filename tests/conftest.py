@@ -9,7 +9,9 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from payment_codes.models import Territory, Counterparty, Application, PaymentCode
+from core.models import Territory
+from counterparty.models import Counterparty
+from payment_codes.models import InterrailRuApplication, InterrailRuCode
 
 User = get_user_model()
 
@@ -80,7 +82,7 @@ def counterparty():
 @pytest.fixture
 def application(user, territory, counterparty):
     """Create a test application"""
-    app = Application.objects.create(
+    app = InterrailRuApplication.objects.create(
         number="TEST001",
         sending_type="single",
         quantity=5,
@@ -110,7 +112,7 @@ def application(user, territory, counterparty):
 @pytest.fixture
 def payment_code(application, territory):
     """Create a test payment code"""
-    return PaymentCode.objects.create(
+    return InterrailRuCode.objects.create(
         code_status="Checking",
         application=application,
         number="PC001",

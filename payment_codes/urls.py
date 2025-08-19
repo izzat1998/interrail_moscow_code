@@ -16,29 +16,31 @@ router.register(r"territories", TerritoryViewSet)
 router.register(r"counterparties", CounterpartyViewSet)
 urlpatterns = [
     path("", include(router.urls)),
+    # InterRail Application endpoints
     path(
-        "code_range/<int:pk>/create/",
-        PaymentCodeCreateRange.as_view(),
-        name="code-range-create",
-    ),
-    path(
-        "application/create/",
-        ApplicationCreateView.as_view(),
-        name="application-create",
-    ),
-    path(
-        "application/list/",
+        "applications/",
         ApplicationListView.as_view(),
-        name="application-list",
+        name="interrail-applications-list",
     ),
     path(
-        "application/<int:pk>/update/",
-        ApplicationUpdateView.as_view(),
-        name="application-update",
+        "applications/create/",
+        ApplicationCreateView.as_view(),
+        name="interrail-applications-create",
     ),
     path(
-        "application/<int:pk>/detail/",
+        "applications/<int:pk>/",
         ApplicationRetrieveView.as_view(),
-        name="application-detail",
+        name="interrail-applications-detail",
+    ),
+    path(
+        "applications/<int:pk>/update/",
+        ApplicationUpdateView.as_view(),
+        name="interrail-applications-update",
+    ),
+    # Payment Code endpoints
+    path(
+        "applications/<int:pk>/codes/create-range/",
+        PaymentCodeCreateRange.as_view(),
+        name="interrail-codes-create-range",
     ),
 ]

@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 
-from payment_codes.models import Application
+from payment_codes.models import InterrailRuApplication
 
 pytestmark = pytest.mark.django_db
 
@@ -27,7 +27,7 @@ class TestApplicationCreateAPI:
         mock_convert.return_value = "applications/test.pdf"
         mock_generate_doc.return_value = "applications/test.pdf"
 
-        url = reverse("application-create")
+        url = reverse("interrail-applications-create")
         payload = {
             "number": "TEST002",
             "sending_type": "single",
@@ -48,20 +48,20 @@ class TestApplicationCreateAPI:
         response = authenticated_client.post(url, payload, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert Application.objects.filter(number="TEST002").exists()
+        assert InterrailRuApplication.objects.filter(number="TEST002").exists()
 
         # Verify mocks were called
         mock_generate_doc.assert_called_once()
 
         # Additional assertions
-        created_application = Application.objects.get(number="TEST002")
+        created_application = InterrailRuApplication.objects.get(number="TEST002")
         assert created_application.forwarder == counterparty
         assert territory in created_application.territories.all()
         assert created_application.date == date(2024, 1, 1)
 
     def test_create_application_invalid_data(self, authenticated_client):
         """Test creating an application with invalid data"""
-        url = reverse("application-create")
+        url = reverse("interrail-applications-create")
         payload = {
             "number": "",  # Invalid empty number
             "quantity": -1,  # Invalid negative quantity
@@ -76,7 +76,7 @@ class TestApplicationCreateAPI:
         """Test handling of document generation failure during application creation"""
         mock_generate_doc.side_effect = Exception("Document generation failed")
 
-        url = reverse("application-create")
+        url = reverse("interrail-applications-create")
         payload = {
             "number": "TEST003",
             "sending_type": "single",
@@ -92,7 +92,7 @@ class TestApplicationCreateAPI:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "Document generation failed" in str(response.data["error"])
         # Verify the application was not created
-        assert not Application.objects.filter(number="TEST003").exists()
+        assert not InterrailRuApplication.objects.filter(number="TEST003").exists()
 
     # @patch("payment_codes.utils.generate_application_document")
     # def test_create_application_with_multiple_territories(
@@ -104,7 +104,7 @@ class TestApplicationCreateAPI:
     #     # Create a second territory
     #     second_territory = Territory.objects.create(name="Second Territory")
     #
-    #     url = reverse("application-create")
+    #     url = reverse("interrail-applications-create")
     #     payload = {
     #         "number": "MULTI001",
     #         "sending_type": "single",
@@ -119,7 +119,7 @@ class TestApplicationCreateAPI:
     #     response = authenticated_client.post(url, payload, format="json")
     #
     #     assert response.status_code == status.HTTP_201_CREATED
-    #     created_app = Application.objects.get(number="MULTI001")
+    #     created_app = InterrailRuApplication.objects.get(number="MULTI001")
     #     assert created_app.territories.count() == 2
     #     assert set(created_app.territories.values_list('id', flat=True)) == {
     #         territory.id,
@@ -137,7 +137,7 @@ class TestApplicationUpdateAPI:
         mock_convert.return_value = "applications/updated_test.pdf"
         mock_generate_doc.return_value = "applications/updated_test.pdf"
 
-        url = reverse("application-update", args=[application.id])
+        url = reverse("interrail-applications-update", args=[application.id])
         payload = {
             "number": "TEST002-UPDATED",
             "sending_type": "block_train",
@@ -168,7 +168,7 @@ class TestApplicationUpdateAPI:
         """Test handling document generation failure during application update"""
         mock_generate_doc.side_effect = Exception("Document generation failed")
 
-        url = reverse("application-update", args=[application.id])
+        url = reverse("interrail-applications-update", args=[application.id])
         payload = {
             "number": "TEST002-UPDATED",
             "sending_type": "block_train",
@@ -193,7 +193,7 @@ class TestApplicationUpdateAPI:
 
     def test_update_application_not_found(self, authenticated_client):
         """Test attempting to update a non-existent application"""
-        url = reverse("application-update", args=[99999])
+        url = reverse("interrail-applications-update", args=[99999])
         payload = {"number": "TEST999"}
 
         response = authenticated_client.put(url, payload, format="json")
@@ -203,12 +203,12 @@ class TestApplicationUpdateAPI:
         self, authenticated_client, application, territory, payment_code
     ):
         """Test retrieving detailed application information"""
-        url = reverse("application-detail", args=[application.id])
+        url = reverse("interrail-applications-detail", args=[application.id])
         response = authenticated_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["number"] == application.number
         assert response.data["sending_type"] == application.sending_type
         assert len(response.data["territories"]) == application.territories.count()
-        assert len(response.data["codes"]) == 1
-        assert response.data["codes"][0]["number"] == payment_code.number
+        assert len(response.data["ru_codes"]) == 1
+        assert response.data["ru_codes"][0]["number"] == payment_code.number

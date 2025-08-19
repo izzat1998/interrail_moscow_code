@@ -34,7 +34,7 @@ DEBUG = env("DEBUG", default=False)
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
-AUTH_USER_MODEL = "users.CustomUser"
+AUTH_USER_MODEL = "users.User"
 # Application definition
 CSRF_TRUSTED_ORIGINS = [
     "https://moscow-code.interrail.uz",
@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "customer",
+    "counterparty", 
+    "core",
     "users",
     "payment_codes",
     "drf_spectacular",

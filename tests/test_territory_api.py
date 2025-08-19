@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from payment_codes.models import Territory
+from core.models import Territory
 from payment_codes.serializers import TerritorySerializer
 
 pytestmark = pytest.mark.django_db

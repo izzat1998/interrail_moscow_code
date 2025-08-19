@@ -8,12 +8,18 @@ from rest_framework import viewsets, generics, serializers, pagination
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 
-from payment_codes.models import Territory, Counterparty, Application, PaymentCode
+from core.models import Territory
+from counterparty.models import Counterparty  
+from payment_codes.models import InterrailRuApplication, InterrailRuCode
 from payment_codes.serializers import (
     TerritorySerializer,
     CounterpartySerializer,
-    ApplicationSerializer,
+    InterrailRuApplicationSerializer,
     PaymentCodeCreateSerializer,
+    InterrailRuApplicationRetrieveSerializer,
+    InterrailRuApplicationListSerializer,
+    # Backward compatibility
+    ApplicationSerializer,
     ApplicationRetrieveSerializer,
     ApplicationListSerializer,
 )
@@ -131,7 +137,7 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-@extend_schema(tags=["Applications"])
+@extend_schema(tags=["InterRail Applications"])
 @extend_schema(
     summary="Create a new application",
     description="""
@@ -163,7 +169,7 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
     },
 )
 class ApplicationCreateView(generics.CreateAPIView):
-    queryset = Application.objects.all()
+    queryset = InterrailRuApplication.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated]
 
@@ -191,17 +197,17 @@ class ApplicationPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 
-@extend_schema(tags=["Applications"])
+@extend_schema(tags=["InterRail Applications"])
 class ApplicationListView(generics.ListAPIView):
-    queryset = Application.objects.all()
+    queryset = InterrailRuApplication.objects.all()
     serializer_class = ApplicationListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = ApplicationPagination
 
 
-@extend_schema(tags=["Applications"])
+@extend_schema(tags=["InterRail Applications"])
 class ApplicationUpdateView(generics.UpdateAPIView):
-    queryset = Application.objects.all()
+    queryset = InterrailRuApplication.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
@@ -235,15 +241,15 @@ class ApplicationUpdateView(generics.UpdateAPIView):
             )
 
 
-@extend_schema(tags=["Applications"])
+@extend_schema(tags=["InterRail Applications"])
 class ApplicationRetrieveView(generics.RetrieveAPIView):
-    queryset = Application.objects.all()
+    queryset = InterrailRuApplication.objects.all()
     serializer_class = ApplicationRetrieveSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "pk"
 
 
-@extend_schema(tags=["Payment Codes"])
+@extend_schema(tags=["InterRail Payment Codes"])
 class PaymentCodeCreateRange(generics.CreateAPIView):
     serializer_class = PaymentCodeCreateSerializer
     permission_classes = [IsAuthenticated]
@@ -258,15 +264,15 @@ class PaymentCodeCreateRange(generics.CreateAPIView):
         territory_id = data["territory_id"]
 
         try:
-            application = Application.objects.get(id=pk)
-        except Application.DoesNotExist:
+            application = InterrailRuApplication.objects.get(id=pk)
+        except InterrailRuApplication.DoesNotExist:
             raise ValidationError({"error": "Application not found."})
 
         # Create the codes
         codes_to_create = []
         for number in range(int(start_range), int(end_range) + 1):
             codes_to_create.append(
-                PaymentCode(
+                InterrailRuCode(
                     application=application,
                     date=application.date,
                     number=str(number).zfill(len(start_range)),
@@ -277,4 +283,4 @@ class PaymentCodeCreateRange(generics.CreateAPIView):
             )
 
         # Bulk create for better performance
-        PaymentCode.objects.bulk_create(codes_to_create)
+        InterrailRuCode.objects.bulk_create(codes_to_create)
