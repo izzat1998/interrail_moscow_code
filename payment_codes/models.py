@@ -19,12 +19,19 @@ class InterrailRuApplication(TimeStampedModel):
         ('single', 'Single'),
         ('block_train', 'Block Train'),
     )
+    CONTAINER_TYPE_CHOICES = (
+        ('20', '20ft'),
+        ('20HC', '20ft High Cube'),
+        ('40', '40ft'),
+        ('40HC', '40ft High Cube'),
+        ('45', '45ft'),
+    )
 
     number = models.CharField(max_length=100, blank=True, unique=True)
     request_file = models.FileField(upload_to='interrail_russian/applications/', blank=True, null=True)
     quantity = models.IntegerField(default=1)
     date = models.DateField(blank=True, null=True)
-    paid_telegram = models.CharField(max_length=100, blank=True)
+    paid_telegram = models.BooleanField(default=False)
     departure = models.CharField(max_length=100, blank=True)
     departure_code = models.CharField(max_length=100, blank=True)
     destination = models.CharField(max_length=100, blank=True)
@@ -48,7 +55,7 @@ class InterrailRuApplication(TimeStampedModel):
     comment = models.TextField(blank=True)
     sending_type = models.CharField(max_length=100, blank=True, choices=SENDING_TYPE_CHOICES)
     add_charges = models.FloatField(blank=True, default=0)
-    container_type = models.CharField(max_length=255, blank=True)
+    container_type = models.CharField(max_length=255, blank=True, choices=CONTAINER_TYPE_CHOICES)
 
     forwarder = models.ForeignKey('counterparty.Counterparty', on_delete=models.CASCADE, related_name='ru_applications')
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name='ru_applications')

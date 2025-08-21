@@ -14,10 +14,7 @@ from payment_codes.models import InterrailRuApplication, InterrailRuCode
 from payment_codes.serializers import (
     TerritorySerializer,
     CounterpartySerializer,
-    InterrailRuApplicationSerializer,
     PaymentCodeCreateSerializer,
-    InterrailRuApplicationRetrieveSerializer,
-    InterrailRuApplicationListSerializer,
     # Backward compatibility
     ApplicationSerializer,
     ApplicationRetrieveSerializer,

@@ -1,7 +1,5 @@
-from rest_framework import serializers, generics
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
 
 from core.models import Territory
 from counterparty.models import Counterparty  
@@ -25,6 +23,29 @@ class InterrailRuApplicationSerializer(serializers.ModelSerializer):
         model = InterrailRuApplication
         fields = "__all__"
         read_only_fields = ("created", "modified", "request_file", "id", "manager")
+    
+    def validate(self, data):
+        loading_type = data.get("loading_type")
+        container_type = data.get("container_type")
+        weight = data.get("weight")
+        
+        # When loading_type is wagon, container_type should not be required and should be cleared
+        if loading_type == "wagon":
+            if not weight:
+                raise serializers.ValidationError(
+                    {"weight": "Weight is required when loading type is wagon."}
+                )
+            # Clear container_type for wagon loading
+            data["container_type"] = ""
+        
+        # When loading_type is container, container_type should be required
+        elif loading_type == "container":
+            if not container_type:
+                raise serializers.ValidationError(
+                    {"container_type": "Container type is required when loading type is container."}
+                )
+        
+        return data
 
 
 class InterrailRuApplicationListSerializer(serializers.ModelSerializer):
@@ -51,21 +72,6 @@ class InterrailRuApplicationRetrieveSerializer(serializers.ModelSerializer):
         read_only_fields = ("created", "modified", "request_file", "id", "manager")
 
 
-class ApplicationCreateView(generics.CreateAPIView):
-    queryset = InterrailRuApplication.objects.all()
-    serializer_class = InterrailRuApplicationSerializer
-    permission_classes = [IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)
-
-    def perform_create(self, serializer):
-        # Automatically set the manager as the current user
-        serializer.save(manager=self.request.user)
-
-
-class ApplicationRetrieveView(generics.RetrieveAPIView):
-    queryset = InterrailRuApplication.objects.all()
-    serializer_class = InterrailRuApplicationRetrieveSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class PaymentCodeCreateSerializer(serializers.Serializer):

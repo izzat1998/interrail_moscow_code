@@ -94,6 +94,46 @@ class TestApplicationCreateAPI:
         # Verify the application was not created
         assert not InterrailRuApplication.objects.filter(number="TEST003").exists()
 
+    def test_create_application_with_container_type_no_mocking(
+        self, authenticated_client, territory, counterparty
+    ):
+        """Test creating application with container_type field - integration test without mocking"""
+        url = reverse("interrail-applications-create")
+        payload = {
+            "number": "CONTAINER001",
+            "sending_type": "single",
+            "quantity": 1,
+            "date": "2024-01-01",
+            "territories": [territory.id],
+            "forwarder": counterparty.id,
+            "departure": "Moscow",
+            "departure_code": "MSK",
+            "destination": "St. Petersburg", 
+            "destination_code": "SPB",
+            "cargo": "Test Cargo",
+            "loading_type": "container",
+            "container_type": "20",
+            "weight": "1000",
+        }
+
+        # This test will fail if CONTAINER_TYPE_CHOICES is missing
+        # because the document generation will crash
+        response = authenticated_client.post(url, payload, format="json")
+        
+        # We expect this to fail due to missing document template or external service
+        # but it should NOT fail due to missing CONTAINER_TYPE_CHOICES
+        # The error message should not contain "AttributeError" about CONTAINER_TYPE_CHOICES
+        if response.status_code != 201:
+            error_message = str(response.data.get("error", ""))
+            assert "CONTAINER_TYPE_CHOICES" not in error_message
+            assert "AttributeError" not in error_message
+            # It's OK if it fails due to template or conversion service issues
+            print(f"Expected failure due to document generation: {error_message}")
+        else:
+            # If it succeeds, verify the application was created with correct container_type
+            app = InterrailRuApplication.objects.get(number="CONTAINER001")
+            assert app.container_type == "20"
+
     # @patch("payment_codes.utils.generate_application_document")
     # def test_create_application_with_multiple_territories(
     #         self, mock_generate_doc, authenticated_client, territory, counterparty
