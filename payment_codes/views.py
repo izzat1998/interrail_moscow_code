@@ -84,7 +84,7 @@ class CounterpartyViewSet(viewsets.ModelViewSet):
     ViewSet for viewing and editing counterparties.
     """
 
-    queryset = Counterparty.objects.all()
+    queryset = Counterparty.objects.filter(name="SHOSHTRANS")
     serializer_class = CounterpartySerializer
     permission_classes = [IsAuthenticated]
 
